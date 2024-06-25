@@ -12,7 +12,7 @@ from .utils import validate_password, send_otp_via_email
 class AuthenticationViewSet(ViewSet):
     def token(self, request, *args, **kwargs):
         data = request.data
-        user = User.objects.filter(username=data.get('username')).first()
+        user = User.objects.filter(email=data.get('email')).first()
         if not user:
             return Response(data={"error": "user not found ", 'ok': False},
                             status=status.HTTP_404_NOT_FOUND)

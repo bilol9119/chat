@@ -8,7 +8,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=50, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
 
-    profile_photo = models.ImageField(upload_to='profile_photos/')
+    profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)

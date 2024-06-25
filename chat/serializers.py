@@ -4,18 +4,25 @@ from authentication.serializers import UserSerializer
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
     class Meta:
         model = Message
-        fields = ('content', 'created_at', 'user',)
+        fields = ('content', 'created_at', 'user', 'chat')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user'] = UserSerializer(instance.user).data
+        representation['content'] = MessageSerializer(instance.content.all(),
+                                                      many=True).data
+        return representation
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    messages = MessageSerializer(many=True, read_only=True)
-    user1 = UserSerializer(read_only=True)
-    user2 = UserSerializer(read_only=True)
-
     class Meta:
         model = Chat
-        fields = ('user1', 'user2', 'messages', )
+        fields = ('id','user1', 'user2',)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user1'] = UserSerializer(instance.user1).data
+        representation['user2'] = UserSerializer(instance.user2).data
+        return representation
