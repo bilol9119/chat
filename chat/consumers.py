@@ -26,15 +26,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         message = data['message']
-        user = self.scope['user']
+        user_id = data['user']
         chat_id = self.chat_id
 
         # Save message to the database
         from .models import Chat, Message
-        chat = await database_sync_to_async(Chat.objects.get)(id=chat_id)
+        from authentication.models import User
+        user = await database_sync_to_async(User.objects.get)(id=user_id)
         message = await database_sync_to_async(Message.objects.create)(
-            chat=chat,
-            user=user,
+            chat=chat_id,
+            user=user_id,
             content=message
         )
 
@@ -48,8 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'created_at': str(message.created_at),
                     'sender': {
                         'id': user.id,
-                        'username': user.username,
-                        'email': user.email
+
                     }
                 }
             }

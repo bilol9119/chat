@@ -11,8 +11,6 @@ class MessageSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['user'] = UserSerializer(instance.user).data
-        representation['content'] = MessageSerializer(instance.content.all(),
-                                                      many=True).data
         return representation
 
 
