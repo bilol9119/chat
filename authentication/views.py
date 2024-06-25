@@ -74,3 +74,35 @@ class AuthenticationViewSet(ViewSet):
         otp_obj.otp_attempt += 1
         otp_obj.save(update_fields=['otp_attempt'])
         return Response({"error": "Otp code is wrong"}, status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(ViewSet):
+    def auth_me(self, request, *args, **kwargs):
+        if not (request.user.is_authenticated and request.user.is_verified):
+            return Response({"Error": "Please authenticate "}, status.HTTP_401_UNAUTHORIZED)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        token = AccessToken(token)
+        user_id = token.payload.get('user_id')
+        serializer = UserSerializer(User.objects.filter(id=user_id).first())
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    def profile_update(self, request, *args, **kwargs):
+        user = request.user
+        if not (user.is_authenticated and user.is_verified):
+            return Response({"Error": "Please authenticate "}, status.HTTP_401_UNAUTHORIZED)
+        if request.data.get('email'):
+            return Response({"error": "Updating email is not allowed"}, status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status.HTTP_200_OK)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+    def get_user(self, request, *args, **kwargs):
+        username = kwargs.get('username')
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return Response({"detail": "User not found!"}, status.HTTP_404_NOT_FOUND)
+        serializer = UserSerializer(user)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
